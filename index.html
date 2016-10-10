@@ -13,7 +13,114 @@
 <canvas id="myCanvas" width="320" height="480"></canvas>
 
 <script>
-  // JavaScript code goes here
+  var canvas = document.getElementById("myCanvas");
+  var ctx = canvas.getContext("2d");
+
+  var playerHeight = canvas.height/4; // @TODO unhardcode 4
+  var playerWidth = canvas.width/2; // @TODO unhardcode 4
+  var playerX = 0;
+
+  var rightPressed = false;
+  var leftPressed = false;
+  var fired = false;
+
+  var pumpkinRowCount = 4;
+  var pumpkinColumnCount = 2;
+  var pumpkinWidth = canvas.width/pumpkinColumnCount;
+  var pumpkinHeight = canvas.height/pumpkinRowCount;
+  // var pumpkinPadding = 10;
+  // var pumpkinOffsetTop = 30;
+  // var pumpkinOffsetLeft = 30;
+  var pumpkins = [];
+
+  function generateRow() {
+    var a = !!Math.floor(Math.random() * 2);
+    var b = !a;
+    if (pumpkins.length < 2) {
+      a = false;
+      b = false;
+    } else if (pumpkins[0][0] != a && pumpkins[0][1] != b) {
+      a = false;
+      b = false;
+    }
+    return [a, b];
+  }
+
+  function movePumpkins() {
+    pumpkins.unshift(generateRow());
+    pumpkins.pop();
+  }
+
+  for(i=0; i<pumpkinRowCount; i++) {
+    pumpkins.unshift(generateRow());
+  }
+
+  document.addEventListener("keydown", keyDownHandler, false);
+  document.addEventListener("keyup", keyUpHandler, false);
+
+  function keyDownHandler(e) {
+    if(!fired) {
+      if(e.keyCode == 39) {
+        playerX = canvas.width/2;
+        movePumpkins();
+      }
+      else if(e.keyCode == 37) {
+        playerX = 0;
+        movePumpkins();
+      }
+
+      fired = true;
+    }
+  }
+
+  function keyUpHandler(e) {
+    fired = false;
+  }
+
+  function drawRoad() {
+    ctx.beginPath();
+    ctx.rect(135, 0, 50, 480);
+    ctx.fillStyle = "#50514f";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function drawPlayer() {
+    ctx.beginPath();
+    ctx.rect(playerX, canvas.height-playerHeight, playerWidth, playerHeight);
+    ctx.fillStyle = "#9bc53d";
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  function drawPumpkins() {
+    for(c=0; c<pumpkinRowCount; c++) {
+      for(r=0; r<pumpkinColumnCount; r++) {
+        if (pumpkins[c][r]) {
+          var pumpkinX = 0 + canvas.width/2*r;
+          var pumpkinY = (canvas.height/pumpkinRowCount)*c;
+          ctx.beginPath();
+          ctx.rect(pumpkinX, pumpkinY, pumpkinWidth, pumpkinHeight);
+          ctx.fillStyle = "#fa7921";
+          ctx.fill();
+          ctx.stroke();
+          ctx.closePath();
+        }
+      }
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // drawRoad();
+    drawPumpkins();
+    drawPlayer();
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
 </script>
 
 </body>
