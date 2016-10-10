@@ -2,15 +2,28 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pumpkin Thief</title>
     <style>
       * { padding: 0; margin: 0; }
       canvas { background: #eee; display: block; margin: 0 auto; }
+      .controls {
+        text-align: center;
+        margin-top: 10px;
+      }
+      .controls button {
+        width: 50px;
+        height: 50px;
+      }
     </style>
 </head>
 <body>
 
 <canvas id="myCanvas" width="320" height="480"></canvas>
+<div class="controls">
+  <button onclick="moveLeft()"><</button>
+  <button onclick="moveRight()">></button>
+</div>
 
 <script>
   var canvas = document.getElementById("myCanvas");
@@ -77,6 +90,16 @@
     fired = false;
   }
 
+  function moveLeft() {
+    playerX = 0;
+    movePumpkins();
+  }
+
+  function moveRight() {
+    playerX = canvas.width/2;
+    movePumpkins();
+  }
+
   function drawRoad() {
     ctx.beginPath();
     ctx.rect(135, 0, 50, 480);
@@ -88,7 +111,7 @@
   function drawPlayer() {
     ctx.beginPath();
     ctx.rect(playerX, canvas.height-playerHeight, playerWidth, playerHeight);
-    ctx.fillStyle = "#9bc53d";
+    ctx.fillStyle = "#5BC0EB";
     ctx.fill();
     ctx.stroke();
     ctx.closePath();
@@ -102,7 +125,7 @@
           var pumpkinY = (canvas.height/pumpkinRowCount)*c;
           ctx.beginPath();
           ctx.rect(pumpkinX, pumpkinY, pumpkinWidth, pumpkinHeight);
-          ctx.fillStyle = "#fa7921";
+          ctx.fillStyle = "#9BC53D";
           ctx.fill();
           ctx.stroke();
           ctx.closePath();
