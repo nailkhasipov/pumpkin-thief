@@ -85,16 +85,9 @@
     if(!fired) {
       if(e.keyCode == 39) {
         moveRight();
-        score++;
       }
       else if(e.keyCode == 37) {
         moveLeft();
-        score++;
-      }
-
-      if (pumpkins.length === 4 && pumpkins[3].every(function(element, index) { return element === playerPosition[index]; })) {
-        alert("GAME OVER");
-        document.location.reload();
       }
 
       fired = true;
@@ -109,12 +102,14 @@
     playerX = 0;
     playerPosition = [true, false];
     movePumpkins();
+    score++;
   }
 
   function moveRight() {
     playerX = canvas.width/2;
     playerPosition = [false, true];
     movePumpkins();
+    score++;
   }
 
   function drawRoad() {
@@ -148,6 +143,11 @@
           ctx.closePath();
         }
       }
+    }
+
+    if (pumpkins.length === 4 && pumpkins[3].every(function(element, index) { return element === playerPosition[index]; })) {
+      alert("GAME OVER \n Your score: " + score);
+      document.location.reload();
     }
   }
 
