@@ -6,7 +6,7 @@
     <title>Pumpkin Thief</title>
     <style>
       * { padding: 0; margin: 0; }
-      canvas { background: #eee; display: block; margin: 0 auto; }
+      canvas { background: url("street.png"); display: block; margin: 0 auto; }
       .controls {
         width: 320px;
         margin: 10px auto;
@@ -40,6 +40,12 @@
   var playerWidth = canvas.width/2; // @TODO unhardcode 2
   var playerPosition = [true, false];
   var playerX = 0;
+  var playerReady = false;
+  var playerImage = new Image();
+  playerImage.onload = function () {
+    playerReady = true;
+  };
+  playerImage.src = "player.png";
 
   var canX, canY;
   var rightPressed = false;
@@ -55,6 +61,20 @@
   // var pumpkinOffsetTop = 30;
   // var pumpkinOffsetLeft = 30;
   var pumpkins = [];
+
+  var pumpkinsReady = false;
+  var pumpkinsImage = new Image();
+  pumpkinsImage.onload = function () {
+    pumpkinsReady = true;
+  };
+  pumpkinsImage.src = "pumpkin.png";
+
+  var carsReady = false;
+  var carsImage = new Image();
+  carsImage.onload = function () {
+    carsReady = true;
+  };
+  carsImage.src = "car.png";
 
   function generateRow() {
     var a = !!Math.floor(Math.random() * 2);
@@ -112,35 +132,28 @@
     score++;
   }
 
-  function drawRoad() {
-    ctx.beginPath();
-    ctx.rect(135, 0, 50, 480);
-    ctx.fillStyle = "#50514f";
-    ctx.fill();
-    ctx.closePath();
-  }
-
   function drawPlayer() {
-    ctx.beginPath();
-    ctx.rect(playerX, canvas.height-playerHeight, playerWidth, playerHeight);
-    ctx.fillStyle = "#5BC0EB";
-    ctx.fill();
-    ctx.stroke();
-    ctx.closePath();
+    // ctx.beginPath();
+    // ctx.rect(playerX, canvas.height-playerHeight, playerWidth, playerHeight);
+    // ctx.fillStyle = "#5BC0EB";
+    // ctx.fill();
+    // ctx.stroke();
+    // ctx.closePath();
+    ctx.drawImage(playerImage.src,0,0);
+    ctx.moveTo(0,0);
   }
 
   function drawPumpkins() {
     for(c=0; c<pumpkinRowCount; c++) {
       for(r=0; r<pumpkinColumnCount; r++) {
         if (pumpkins[c][r]) {
-          var pumpkinX = 0 + canvas.width/2*r;
+          var pumpkinX = 0 + canvas.width/2*r + 40;
           var pumpkinY = (canvas.height/pumpkinRowCount)*c;
-          ctx.beginPath();
-          ctx.rect(pumpkinX, pumpkinY, pumpkinWidth, pumpkinHeight);
-          ctx.fillStyle = "#9BC53D";
-          ctx.fill();
-          ctx.stroke();
-          ctx.closePath();
+          ctx.drawImage(carsImage, pumpkinX, pumpkinY);
+        } else {
+          var pumpkinX = 0 + canvas.width/2*r + 40;
+          var pumpkinY = (canvas.height/pumpkinRowCount)*c;
+          ctx.drawImage(pumpkinsImage, pumpkinX, pumpkinY);
         }
       }
     }
@@ -159,9 +172,17 @@
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawPumpkins();
-    drawPlayer();
     drawScore();
+
+    if (pumpkinsReady && carsReady) {
+      drawPumpkins();
+    }
+
+    if (playerReady) {
+      var x = playerX + 40;
+      var y = canvas.height-playerHeight;
+      ctx.drawImage(playerImage, x, y);
+    }
 
     requestAnimationFrame(draw);
   }
