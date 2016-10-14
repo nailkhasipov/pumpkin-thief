@@ -94,6 +94,12 @@
     pumpkins.pop();
   }
 
+  function collectPumpkins() {
+    console.log(playerPosition);
+    console.log(pumpkins[3]);
+    // pumpkins[3]
+  }
+
   for(i=0; i<pumpkinRowCount; i++) {
     pumpkins.unshift(generateRow());
   }
@@ -119,28 +125,31 @@
   }
 
   function moveLeft() {
+    var forward = playerPosition[0];
     playerX = 0;
     playerPosition = [true, false];
-    movePumpkins();
-    score++;
+    collectPumpkins();
+    if ( forward ) {
+      movePumpkins();
+      score++;
+    }
   }
 
   function moveRight() {
+    var forward = playerPosition[1];
     playerX = canvas.width/2;
     playerPosition = [false, true];
-    movePumpkins();
-    score++;
+    collectPumpkins()
+    if ( forward ) {
+      movePumpkins();
+      score++;
+    }
   }
 
   function drawPlayer() {
-    // ctx.beginPath();
-    // ctx.rect(playerX, canvas.height-playerHeight, playerWidth, playerHeight);
-    // ctx.fillStyle = "#5BC0EB";
-    // ctx.fill();
-    // ctx.stroke();
-    // ctx.closePath();
-    ctx.drawImage(playerImage.src,0,0);
-    ctx.moveTo(0,0);
+    var x = playerX + 40;
+    var y = canvas.height-playerHeight;
+    ctx.drawImage(playerImage, x, y);
   }
 
   function drawPumpkins() {
@@ -174,14 +183,9 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawScore();
 
-    if (pumpkinsReady && carsReady) {
+    if (playerReady && pumpkinsReady && carsReady) {
       drawPumpkins();
-    }
-
-    if (playerReady) {
-      var x = playerX + 40;
-      var y = canvas.height-playerHeight;
-      ctx.drawImage(playerImage, x, y);
+      drawPlayer();
     }
 
     requestAnimationFrame(draw);
