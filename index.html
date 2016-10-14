@@ -7,25 +7,44 @@
     <style>
       * { padding: 0; margin: 0; }
       canvas { background: url("street.png"); display: block; margin: 0 auto; }
-      .controls {
+      .game-wrapper {
         width: 320px;
         margin: 10px auto;
       }
-      .controls .btn {
+      .btn {
         float: left;
         width: 100px;
         height: 100px;
         border-radius: 50px;
-        background: #FDE74C;
+        /*background: #FDE74C;*/
+      }
+      .left {
+        background-image: url("left.png");
+      }
+      .right {
+        background-image: url("right.png");
+      }
+      .restart {
+        background-image: url("restart.png");
+      }
+      .game-over {
+        text-align: center;
       }
     </style>
 </head>
 <body>
 
-<canvas id="myCanvas" width="320" height="360"></canvas>
-<div class="controls">
-  <div class="btn" onclick="moveLeft()" style="margin-left: 30px;"></div>
-  <div class="btn" onclick="moveRight()" style="margin-left: 60px;"></div>
+<div class="game-wrapper">
+  <canvas id="myCanvas" width="320" height="360"></canvas>
+  <div id="controls" class="controls">
+    <div class="btn left" onclick="moveLeft()" style="margin-left: 30px;"></div>
+    <div class="btn right" onclick="moveRight()" style="margin-left: 60px;"></div>
+  </div>
+  <div id="gameOver" class="game-over" style="display: none;">
+    <div id="score"></div>
+    <div class="btn restart" onclick="restart()" style="margin-left: 110px;"></div>
+  </div>
+  <audio id="audioHit" src="hit.wav" style="display:none"></audio>
 </div>
 
 <script>
@@ -47,11 +66,20 @@
   };
   playerImage.src = "player.png";
 
+  var explosionImage = new Image();
+  explosionImage.onload = function () {
+    explosionReady = true;
+  };
+  explosionImage.src = "explosion.png";
+
   var canX, canY;
   var rightPressed = false;
   var leftPressed = false;
   var fired = 0;
   var score = 0;
+  var gameOver = false;
+  var hit = document.getElementById("audioHit");
+  var sound = true;
 
   var pumpkinRowCount = 4;
   var pumpkinColumnCount = 2;
@@ -76,15 +104,27 @@
   };
   carsImage.src = "car.png";
 
+  function endGame() {
+    gameOver = true;
+    hit.play();
+    document.getElementById("controls").style.display = 'none';
+    document.getElementById("gameOver").style.display = '';
+    document.getElementById("score").innerHTML = "Your score: " + score;
+  }
+
+  function restart() {
+    document.location.reload();
+  }
+
   function generateRow() {
     var a = !!Math.floor(Math.random() * 2);
     var b = !a;
+    a = a + 1;
+    b = b + 1;
     if (pumpkins.length < 2) {
-      a = false;
-      b = false;
+      return [0, 0];
     } else if (pumpkins[0][0] != a && pumpkins[0][1] != b) {
-      a = false;
-      b = false;
+      return [1, 1];
     }
     return [a, b];
   }
@@ -92,12 +132,18 @@
   function movePumpkins() {
     pumpkins.unshift(generateRow());
     pumpkins.pop();
+    collectPumpkins();
   }
 
   function collectPumpkins() {
-    console.log(playerPosition);
-    console.log(pumpkins[3]);
-    // pumpkins[3]
+    if ( pumpkins[3][0] == playerPosition[0] ) {
+      pumpkins[3][0] = 0;
+      score++;
+    }
+    if ( pumpkins[3][1] == playerPosition[1] ) {
+      pumpkins[3][1] = 0;
+      score++;
+    }
   }
 
   for(i=0; i<pumpkinRowCount; i++) {
@@ -125,24 +171,22 @@
   }
 
   function moveLeft() {
-    var forward = playerPosition[0];
-    playerX = 0;
-    playerPosition = [true, false];
-    collectPumpkins();
-    if ( forward ) {
-      movePumpkins();
-      score++;
+    if (!gameOver){
+      var forward = playerPosition[0];
+      playerX = 0;
+      playerPosition = [true, false];
+      collectPumpkins();
+      if ( forward ) movePumpkins();
     }
   }
 
   function moveRight() {
-    var forward = playerPosition[1];
-    playerX = canvas.width/2;
-    playerPosition = [false, true];
-    collectPumpkins()
-    if ( forward ) {
-      movePumpkins();
-      score++;
+    if (!gameOver){
+      var forward = playerPosition[1];
+      playerX = canvas.width/2;
+      playerPosition = [false, true];
+      collectPumpkins();
+      if ( forward ) movePumpkins();
     }
   }
 
@@ -152,14 +196,20 @@
     ctx.drawImage(playerImage, x, y);
   }
 
+  function drawExplosion() {
+    var x = playerX + 40;
+    var y = canvas.height-playerHeight;
+    ctx.drawImage(explosionImage, x, y);
+  }
+
   function drawPumpkins() {
     for(c=0; c<pumpkinRowCount; c++) {
       for(r=0; r<pumpkinColumnCount; r++) {
-        if (pumpkins[c][r]) {
+        if ( pumpkins[c][r] === 2 ) {
           var pumpkinX = 0 + canvas.width/2*r + 40;
           var pumpkinY = (canvas.height/pumpkinRowCount)*c;
           ctx.drawImage(carsImage, pumpkinX, pumpkinY);
-        } else {
+        } else if ( pumpkins[c][r] === 1 ) {
           var pumpkinX = 0 + canvas.width/2*r + 40;
           var pumpkinY = (canvas.height/pumpkinRowCount)*c;
           ctx.drawImage(pumpkinsImage, pumpkinX, pumpkinY);
@@ -167,25 +217,32 @@
       }
     }
 
-    if (pumpkins.length === 4 && pumpkins[3].every(function(element, index) { return element === playerPosition[index]; })) {
-      alert("GAME OVER \n Your score: " + score);
-      document.location.reload();
+    if (!gameOver && pumpkins.length === 4 && pumpkins[3][0] === 2 && playerPosition[0] == true ) {
+      endGame();
+    }
+    if (!gameOver && pumpkins.length === 4 && pumpkins[3][1] === 2 && playerPosition[1] == true ) {
+      endGame();
     }
   }
 
   function drawScore() {
     ctx.font = "16px Arial";
-    ctx.fillStyle = "#0095DD";
-    ctx.fillText("Score: "+score, 8, 20);
+    ctx.fillStyle = "#FC2036";
+    ctx.fillText("Score: " + score, 126, 20);
   }
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawScore();
 
-    if (playerReady && pumpkinsReady && carsReady) {
-      drawPumpkins();
-      drawPlayer();
+    if (playerReady && pumpkinsReady && carsReady && explosionReady) {
+      if (!gameOver) {
+        drawPumpkins();
+        drawPlayer();
+      } else {
+        drawPumpkins();
+        drawExplosion();
+      }
     }
 
     requestAnimationFrame(draw);
