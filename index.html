@@ -6,11 +6,12 @@
     <title>Pumpkin Thief</title>
     <style>
       * { padding: 0; margin: 0; }
-      canvas { background: url("street.png"); display: block; margin: 0 auto; }
-      .game-wrapper {
+      #stage {
         width: 320px;
-        margin: 10px auto;
+        height: 480px;
+        position: relative;
       }
+      /*canvas { position: absolute; }*/
       .btn {
         float: left;
         width: 100px;
@@ -19,13 +20,13 @@
         /*background: #FDE74C;*/
       }
       .left {
-        background-image: url("left.png");
+        background-image: url("images/left.png");
       }
       .right {
-        background-image: url("right.png");
+        background-image: url("images/right.png");
       }
       .restart {
-        background-image: url("restart.png");
+        background-image: url("images/restart.png");
       }
       .game-over {
         text-align: center;
@@ -34,9 +35,9 @@
 </head>
 <body>
 
-<div class="game-wrapper">
-  <canvas id="myCanvas" width="320" height="360"></canvas>
-  <div id="controls" class="controls">
+<div id="stage">
+  <canvas id="gameCanvas" width="320" height="320"></canvas>
+  <div id="gameControls" class="controls">
     <div class="btn left" onclick="moveLeft()" style="margin-left: 30px;"></div>
     <div class="btn right" onclick="moveRight()" style="margin-left: 60px;"></div>
   </div>
@@ -44,16 +45,28 @@
     <div id="score"></div>
     <div class="btn restart" onclick="restart()" style="margin-left: 110px;"></div>
   </div>
-  <audio id="audioHit" src="hit.wav" style="display:none"></audio>
+  <audio id="audioHit" src="sound/hit.wav" style="display:none"></audio>
 </div>
 
 <script>
-  var canvas = document.getElementById("myCanvas");
+  var stage = document.getElementById("stage");
+  var canvas = document.getElementById("gameCanvas");
   var ctx = canvas.getContext("2d");
 
-  var controlsAreaWidth = 320;
-  var controlsAreaHeight = 120;
-  var controlsAreaOffsetTop = 360;
+  function resizeGame () {
+    var scaleX = window.innerWidth / canvas.width;
+    var scaleY = window.innerHeight / canvas.height;
+
+    var scaleToFit = Math.min(scaleX, scaleY);
+    var scaleToCover = Math.max(scaleX, scaleY);
+
+    stage.style.transformOrigin = "0 0"; //scale from top left
+    stage.style.transform = "scale(" + scaleToFit + ")";
+  }
+
+  resizeGame();
+  window.addEventListener('resize', resizeGame, false);
+  window.addEventListener('orientationchange', resizeGame, false);
 
   var playerHeight = canvas.height/4; // @TODO unhardcode 4
   var playerWidth = canvas.width/2; // @TODO unhardcode 2
@@ -64,13 +77,20 @@
   playerImage.onload = function () {
     playerReady = true;
   };
-  playerImage.src = "player.png";
+  playerImage.src = "images/player.png";
+
+  var streetReady = false;
+  var streetImage = new Image();
+  streetImage.onload = function () {
+    streetReady = true;
+  };
+  streetImage.src = "images/street.png";
 
   var explosionImage = new Image();
   explosionImage.onload = function () {
     explosionReady = true;
   };
-  explosionImage.src = "explosion.png";
+  explosionImage.src = "images/explosion.png";
 
   var canX, canY;
   var rightPressed = false;
@@ -95,19 +115,19 @@
   pumpkinsImage.onload = function () {
     pumpkinsReady = true;
   };
-  pumpkinsImage.src = "pumpkin.png";
+  pumpkinsImage.src = "images/pumpkin.png";
 
   var carsReady = false;
   var carsImage = new Image();
   carsImage.onload = function () {
     carsReady = true;
   };
-  carsImage.src = "car.png";
+  carsImage.src = "images/car.png";
 
   function endGame() {
     gameOver = true;
     hit.play();
-    document.getElementById("controls").style.display = 'none';
+    document.getElementById("gameControls").style.display = 'none';
     document.getElementById("gameOver").style.display = '';
     document.getElementById("score").innerHTML = "Your score: " + score;
   }
@@ -190,6 +210,10 @@
     }
   }
 
+  function drawStreet() {
+    ctx.drawImage(streetImage, 0, 0);
+  }
+
   function drawPlayer() {
     var x = playerX + 40;
     var y = canvas.height-playerHeight;
@@ -233,9 +257,9 @@
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawScore();
 
-    if (playerReady && pumpkinsReady && carsReady && explosionReady) {
+    if (streetReady && playerReady && pumpkinsReady && carsReady && explosionReady) {
+      drawStreet();
       if (!gameOver) {
         drawPumpkins();
         drawPlayer();
@@ -244,6 +268,8 @@
         drawExplosion();
       }
     }
+
+    drawScore();
 
     requestAnimationFrame(draw);
   }
