@@ -45,7 +45,7 @@
     <div id="score"></div>
     <div class="btn restart" onclick="restart()" style="margin-left: 110px;"></div>
   </div>
-  <audio id="audioHit" src="sound/hit.wav" style="display:none"></audio>
+  <audio id="audioHit" src="sound/hit.wav"></audio>
 </div>
 
 <script>
@@ -79,6 +79,7 @@
   };
   playerImage.src = "images/player.png";
 
+  var streetX = 0;
   var streetReady = false;
   var streetImage = new Image();
   streetImage.onload = function () {
@@ -99,6 +100,7 @@
   var score = 0;
   var gameOver = false;
   var hit = document.getElementById("audioHit");
+  hit.load();
   var sound = true;
 
   var pumpkinRowCount = 4;
@@ -149,10 +151,11 @@
     return [a, b];
   }
 
-  function movePumpkins() {
+  function moveForward() {
     pumpkins.unshift(generateRow());
     pumpkins.pop();
     collectPumpkins();
+    moveStreet();
   }
 
   function collectPumpkins() {
@@ -196,7 +199,7 @@
       playerX = 0;
       playerPosition = [true, false];
       collectPumpkins();
-      if ( forward ) movePumpkins();
+      if ( forward ) moveForward();
     }
   }
 
@@ -206,12 +209,17 @@
       playerX = canvas.width/2;
       playerPosition = [false, true];
       collectPumpkins();
-      if ( forward ) movePumpkins();
+      if ( forward ) moveForward();
     }
   }
 
   function drawStreet() {
-    ctx.drawImage(streetImage, 0, 0);
+    ctx.drawImage(streetImage, 0, streetX - canvas.height);
+    ctx.drawImage(streetImage, 0, streetX);
+    if ( streetX === canvas.height ) {
+      console.log("delete!");
+      streetX = 0;
+    }
   }
 
   function drawPlayer() {
@@ -273,6 +281,34 @@
 
     requestAnimationFrame(draw);
   }
+
+  function moveStreet (val) {
+    var distance = 80;
+    var duration = 50;
+    // The calculations required for the step function
+    var start = new Date().getTime();
+    var end = start + duration;
+    var current = streetX;
+
+    var step = function() {
+      // Get our current progres
+      var timestamp = new Date().getTime();
+      var progress = Math.min((duration - (end - timestamp)) / duration, 1);
+
+      // Update the square's property
+      streetX = current + (distance * progress);
+
+      // If the animation hasn't finished, repeat the step.
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        streetX = current + distance;
+      }
+    };
+
+    // Start the animation
+    return step();
+  };
 
   draw();
 </script>
