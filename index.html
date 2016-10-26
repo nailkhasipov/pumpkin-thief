@@ -247,11 +247,11 @@
   }
 
   function collectPumpkins() {
-    if ( binaryMap[4][0] == playerPosition[0] ) {
+    if ( binaryMap[4][0] == playerPosition[0] && binaryMap[4][0] == 1 ) {
       binaryMap[4][0] = 0;
       score++;
     }
-    if ( binaryMap[4][1] == playerPosition[1] ) {
+    if ( binaryMap[4][1] == playerPosition[1] && binaryMap[4][0] == 1 ) {
       binaryMap[4][1] = 0;
       score++;
     }
