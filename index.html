@@ -103,6 +103,41 @@
   hit.load();
   var sound = true;
 
+  var streetObjects = [];
+  function streetObject(type, x, y) {
+    this.type = type;
+    this.coordinates = [y, x];
+    this.x = 0 + canvas.width/2*x + 40; //TODO unhardcode!!!
+    this.y = (canvas.height/pumpkinRowCount)*y-80; //TODO unhardcode!!!
+    this.moveDown = function () {
+      var distance = 80;
+      var duration = 50;
+      // The calculations required for the step function
+      var start = new Date().getTime();
+      var end = start + duration;
+      var current = this.y;
+
+      var step = function() {
+        // Get our current progres
+        var timestamp = new Date().getTime();
+        var progress = Math.min((duration - (end - timestamp)) / duration, 1);
+
+        // Update the square's property
+        this.y = current + (distance * progress);
+
+        // If the animation hasn't finished, repeat the step.
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          this.y = current + distance;
+        }
+      }.bind(this);
+
+      // Start the animation
+      return step();
+    };
+  }
+
   var pumpkinRowCount = 4;
   var pumpkinColumnCount = 2;
   var pumpkinWidth = canvas.width/pumpkinColumnCount;
@@ -110,7 +145,6 @@
   // var pumpkinPadding = 10;
   // var pumpkinOffsetTop = 30;
   // var pumpkinOffsetLeft = 30;
-  var pumpkins = [];
 
   var pumpkinsReady = false;
   var pumpkinsImage = new Image();
@@ -138,39 +172,50 @@
     document.location.reload();
   }
 
-  function generateRow() {
-    var a = !!Math.floor(Math.random() * 2);
-    var b = !a;
-    a = a + 1;
-    b = b + 1;
-    if (pumpkins.length < 2) {
-      return [0, 0];
-    } else if (pumpkins[0][0] != a && pumpkins[0][1] != b) {
-      return [1, 1];
-    }
-    return [a, b];
+  var binaryMap = generateMap();
+  function generateMap() {
+    return [
+      [1,0],
+      [2,0],
+      [2,1],
+      [0,0],
+      [0,0],
+      [0,0]
+    ];
+  }
+  function updateMap() {
+    var row = [2,1]; //TODO need to generate it
+    binaryMap.unshift(row);
+    binaryMap.pop();
+    row.forEach(function(type, x) { //TODO if 0 then break
+      var item = new streetObject(type, x, 0);
+      streetObjects.push(item);
+    });
   }
 
+  binaryMap.forEach(function(row, y) { // TODO DRY (updateMap())
+    row.forEach(function(type, x) { //TODO if 0 then break
+      var item = new streetObject(type, x, y);
+      streetObjects.push(item);
+    });
+  });
+
   function moveForward() {
-    pumpkins.unshift(generateRow());
-    pumpkins.pop();
     collectPumpkins();
     moveStreet();
+    moveStreetObjects();
+    updateMap();
   }
 
   function collectPumpkins() {
-    if ( pumpkins[3][0] == playerPosition[0] ) {
-      pumpkins[3][0] = 0;
+    if ( binaryMap[4][0] == playerPosition[0] ) {
+      binaryMap[4][0] = 0;
       score++;
     }
-    if ( pumpkins[3][1] == playerPosition[1] ) {
-      pumpkins[3][1] = 0;
+    if ( binaryMap[4][1] == playerPosition[1] ) {
+      binaryMap[4][1] = 0;
       score++;
     }
-  }
-
-  for(i=0; i<pumpkinRowCount; i++) {
-    pumpkins.unshift(generateRow());
   }
 
   document.addEventListener("keydown", keyDownHandler, false);
@@ -217,7 +262,6 @@
     ctx.drawImage(streetImage, 0, streetX - canvas.height);
     ctx.drawImage(streetImage, 0, streetX);
     if ( streetX === canvas.height ) {
-      console.log("delete!");
       streetX = 0;
     }
   }
@@ -235,24 +279,18 @@
   }
 
   function drawPumpkins() {
-    for(c=0; c<pumpkinRowCount; c++) {
-      for(r=0; r<pumpkinColumnCount; r++) {
-        if ( pumpkins[c][r] === 2 ) {
-          var pumpkinX = 0 + canvas.width/2*r + 40;
-          var pumpkinY = (canvas.height/pumpkinRowCount)*c;
-          ctx.drawImage(carsImage, pumpkinX, pumpkinY);
-        } else if ( pumpkins[c][r] === 1 ) {
-          var pumpkinX = 0 + canvas.width/2*r + 40;
-          var pumpkinY = (canvas.height/pumpkinRowCount)*c;
-          ctx.drawImage(pumpkinsImage, pumpkinX, pumpkinY);
-        }
+    streetObjects.forEach(function(item) {
+      if ( item.type === 1 ) {
+        ctx.drawImage(pumpkinsImage, item.x, item.y);
+      } else if ( item.type === 2 ) {
+        ctx.drawImage(carsImage, item.x, item.y);
       }
-    }
+    });
 
-    if (!gameOver && pumpkins.length === 4 && pumpkins[3][0] === 2 && playerPosition[0] == true ) {
+    if (!gameOver && binaryMap.length === 6 && binaryMap[4][0] === 2 && playerPosition[0] == true ) {
       endGame();
     }
-    if (!gameOver && pumpkins.length === 4 && pumpkins[3][1] === 2 && playerPosition[1] == true ) {
+    if (!gameOver && binaryMap.length === 6 && binaryMap[4][1] === 2 && playerPosition[1] == true ) {
       endGame();
     }
   }
@@ -309,6 +347,12 @@
     // Start the animation
     return step();
   };
+
+  function moveStreetObjects () {
+    streetObjects.forEach(function(item) {
+      item.moveDown();
+    });
+  }
 
   draw();
 </script>
