@@ -110,6 +110,7 @@
     this.x = 0 + canvas.width/2*x + 40; //TODO unhardcode!!!
     this.y = (canvas.height/pumpkinRowCount)*y-80; //TODO unhardcode!!!
     this.moveDown = function () {
+      // console.log(streetObjects.indexOf(this));
       var distance = 80;
       var duration = 50;
       // The calculations required for the step function
@@ -130,11 +131,17 @@
           requestAnimationFrame(step);
         } else {
           this.y = current + distance;
+          this.coordinates[0]++;
+          if ( this.coordinates[0] >4 ) this.destroy();
         }
       }.bind(this);
 
       // Start the animation
       return step();
+    };
+    this.destroy = function() {
+      var i = streetObjects.indexOf(this);
+      streetObjects.splice(i, 1);
     };
   }
 
@@ -203,7 +210,6 @@
       this.data = this.data.concat(flatten);
     },
     getNextRow: function() {
-      this.showMatrix();
       if ( this.data.length === 1 ) this.fillData();
       return this.data.shift();
     },
@@ -234,16 +240,20 @@
     var row = Level.getNextRow();
     binaryMap.unshift(row);
     binaryMap.pop();
-    row.forEach(function(type, x) { //TODO if 0 then break
-      var item = new streetObject(type, x, 0);
-      streetObjects.push(item);
+    row.forEach(function(type, x) {
+      if ( type != 0 ) {
+        var item = new streetObject(type, x, 0);
+        streetObjects.push(item);
+      }
     });
   }
 
   binaryMap.forEach(function(row, y) { // TODO DRY (updateMap())
-    row.forEach(function(type, x) { //TODO if 0 then break
-      var item = new streetObject(type, x, y);
-      streetObjects.push(item);
+    row.forEach(function(type, x) {
+      if ( type != 0 ) {
+        var item = new streetObject(type, x, y);
+        streetObjects.push(item);
+      }
     });
   });
 

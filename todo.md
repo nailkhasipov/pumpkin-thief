@@ -4,5 +4,5 @@
 + Responsive
 - Timer
 - Refactor
-+ fix bug with collect pumpkins
-+ move controls to canvas
+- fix bug with collect pumpkins
+- move controls to canvas
