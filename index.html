@@ -98,6 +98,9 @@
   var leftPressed = false;
   var fired = 0;
   var score = 0;
+  var start = false;
+  var timer = 500;
+  var timeLeft = timer/10;
   var gameOver = false;
   var hit = document.getElementById("audioHit");
   hit.load();
@@ -264,17 +267,21 @@
   });
 
   function moveForward() {
+    start = true;
     moveStreet();
     moveStreetObjects();
     updateMap();
+    timer += 10;
+    score++;
   }
 
   function collectPumpkins() {
     streetObjects.forEach(function(item){
       item.isContainItem(function(item){
         if ( item.type == 1 ) {
-            score++;
+            score += 5;
             item.destroy();
+            timer += 15;
         } else if ( item.type == 2 ) {
           endGame();
         }
@@ -354,8 +361,20 @@
 
   function drawScore() {
     ctx.font = "16px Arial";
-    ctx.fillStyle = "#FC2036";
-    ctx.fillText("Score: " + score, 126, 20);
+    ctx.fillStyle = "#E55934";
+    ctx.fillText(score, 154, 20);
+  }
+
+  function drawTimer() {
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(110,25,100,10);
+    ctx.strokeRect(110,25,100,10);
+    if ( timeLeft > 20 ) {
+      ctx.fillStyle = "#9BC53D";
+    } else {
+        ctx.fillStyle = "#E55934";
+    }
+    ctx.fillRect(110,25,timeLeft,10);
   }
 
   function draw() {
@@ -372,7 +391,15 @@
       }
     }
 
+    if ( start && timer > 0 ) {
+      timer--;
+      timeLeft = timer/10;
+    } else if ( timer < 0 ) {
+      endGame();
+    }
+
     drawScore();
+    drawTimer();
 
     requestAnimationFrame(draw);
   }

@@ -3,7 +3,7 @@
 + Sounds
 + Level generator
 + Responsive
-- Timer
++ Timer
 - Refactor
 + fix bug with collect pumpkins
 - move controls to canvas
