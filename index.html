@@ -195,17 +195,25 @@
       ]
     ],
     fillData: function() {
-      var old = this.data;
-      var bricks = this.bricks;
-      shuffle(bricks);
-      var flatten = bricks.reduce(function(a, b) {
+      var next = JSON.parse(JSON.stringify(this.bricks));
+      shuffle(next);
+      var flatten = next.reduce(function(a, b) {
         return a.concat(b);
       }, []);
-      this.data = old.concat(flatten);
+      this.data = this.data.concat(flatten);
     },
     getNextRow: function() {
+      this.showMatrix();
       if ( this.data.length === 1 ) this.fillData();
       return this.data.shift();
+    },
+    showMatrix: function() {
+      console.log("data>>>>>>>>>>");
+      this.data.forEach(function(row) {
+        var str = row[0] + " " + row[1];
+        console.log(str);
+        console.log(" ");
+      });
     }
   }
 
