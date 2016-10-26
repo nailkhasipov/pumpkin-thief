@@ -172,7 +172,44 @@
     document.location.reload();
   }
 
-  var binaryMap = generateMap();
+  var Level = {
+    data: [],
+    bricks: [
+      [
+        [0,0],
+        [1,0],
+        [0,2],
+        [0,2]
+      ],
+      [
+        [0,0],
+        [2,0],
+        [1,0],
+        [2,0]
+      ],
+      [
+        [0,0],
+        [1,2],
+        [0,2],
+        [0,1]
+      ]
+    ],
+    fillData: function() {
+      var bricks = this.bricks;
+      shuffle(bricks);
+      this.data = bricks.reduce(function(a, b) {
+        return a.concat(b);
+      }, []);
+    },
+    getNextRow: function() {
+      if ( this.data.length === 1 ) this.fillData();
+      return this.data.shift();
+    }
+  }
+
+  Level.fillData();
+
+  var binaryMap = generateMap(); //TODO need to random generate start items
   function generateMap() {
     return [
       [1,0],
@@ -184,7 +221,7 @@
     ];
   }
   function updateMap() {
-    var row = [2,1]; //TODO need to generate it
+    var row = Level.getNextRow();
     binaryMap.unshift(row);
     binaryMap.pop();
     row.forEach(function(type, x) { //TODO if 0 then break
@@ -355,6 +392,16 @@
   }
 
   draw();
+
+  function shuffle(a) {
+    var j, x, i;
+    for (i = a.length; i; i--) {
+      j = Math.floor(Math.random() * i);
+      x = a[i - 1];
+      a[i - 1] = a[j];
+      a[j] = x;
+    }
+  }
 </script>
 
 </body>
