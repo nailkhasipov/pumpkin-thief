@@ -1,6 +1,6 @@
-* Graphics
-* Animation
-* Level generator
-* Responsive
-* Timer
-* Refactor
+- Graphics
++ Animation
++ Level generator
++ Responsive
+- Timer
+- Refactor
