@@ -195,11 +195,13 @@
       ]
     ],
     fillData: function() {
+      var old = this.data;
       var bricks = this.bricks;
       shuffle(bricks);
-      this.data = bricks.reduce(function(a, b) {
+      var flatten = bricks.reduce(function(a, b) {
         return a.concat(b);
       }, []);
+      this.data = old.concat(flatten);
     },
     getNextRow: function() {
       if ( this.data.length === 1 ) this.fillData();
