@@ -132,7 +132,8 @@
         } else {
           this.y = current + distance;
           this.coordinates[0]++;
-          if ( this.coordinates[0] >4 ) this.destroy();
+          collectPumpkins();
+          if ( this.coordinates[0] > 4 ) this.destroy();
         }
       }.bind(this);
 
@@ -142,6 +143,11 @@
     this.destroy = function() {
       var i = streetObjects.indexOf(this);
       streetObjects.splice(i, 1);
+    };
+    this.isContainItem = function(callback) {
+      if (this.coordinates.toString() == "4,0" && playerPosition[0] || this.coordinates.toString() == "4,1" && playerPosition[1]) {
+        callback(this);
+      }
     };
   }
 
@@ -258,21 +264,22 @@
   });
 
   function moveForward() {
-    collectPumpkins();
     moveStreet();
     moveStreetObjects();
     updateMap();
   }
 
   function collectPumpkins() {
-    if ( binaryMap[4][0] == playerPosition[0] && binaryMap[4][0] == 1 ) {
-      binaryMap[4][0] = 0;
-      score++;
-    }
-    if ( binaryMap[4][1] == playerPosition[1] && binaryMap[4][0] == 1 ) {
-      binaryMap[4][1] = 0;
-      score++;
-    }
+    streetObjects.forEach(function(item){
+      item.isContainItem(function(item){
+        if ( item.type == 1 ) {
+            score++;
+            item.destroy();
+        } else if ( item.type == 2 ) {
+          endGame();
+        }
+      });
+    });
   }
 
   document.addEventListener("keydown", keyDownHandler, false);
@@ -343,13 +350,6 @@
         ctx.drawImage(carsImage, item.x, item.y);
       }
     });
-
-    if (!gameOver && binaryMap.length === 6 && binaryMap[4][0] === 2 && playerPosition[0] == true ) {
-      endGame();
-    }
-    if (!gameOver && binaryMap.length === 6 && binaryMap[4][1] === 2 && playerPosition[1] == true ) {
-      endGame();
-    }
   }
 
   function drawScore() {
